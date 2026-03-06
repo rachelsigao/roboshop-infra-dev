@@ -7,7 +7,7 @@ resource "aws_ssm_parameter" "vpc_id" {
 resource "aws_ssm_parameter" "public_subnet_ids" {
   name  = "/${var.project}/${var.environment}/public_subnet_ids"
   type  = "StringList"
-  value = join(",", module.vpc.public_subnet_ids)
+  value = join(",", module.vpc.public_subnet_ids) # join function is used to convert the list of subnet ids into a comma-separated string, which is the required format for StringList type in SSM Parameter Store.
 }
 
 resource "aws_ssm_parameter" "private_subnet_ids" {
