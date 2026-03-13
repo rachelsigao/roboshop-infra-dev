@@ -1,7 +1,7 @@
-# Security groups for each component of the application.  
+# Create security group per Roboshop component using the shared terraform-aws-sg module.
 module "mongodb" {
     #source = "../../terraform-aws-sg"
-    source = "git::https://github.com/rachelsigao/terraform-aws-sg.git?ref=main"
+    source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
 
@@ -12,7 +12,7 @@ module "mongodb" {
 
 module "redis" {
     #source = "../../terraform-aws-sg"
-    source = "git::https://github.com/rachelsigao/terraform-aws-sg.git?ref=main"
+    source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
 
@@ -23,7 +23,7 @@ module "redis" {
 
 module "mysql" {
     #source = "../../terraform-aws-sg"
-    source = "git::https://github.com/rachelsigao/terraform-aws-sg.git?ref=main"
+    source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
 
@@ -34,7 +34,7 @@ module "mysql" {
 
 module "rabbitmq" {
     #source = "../../terraform-aws-sg"
-    source = "git::https://github.com/rachelsigao/terraform-aws-sg.git?ref=main"
+    source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
 
@@ -45,7 +45,7 @@ module "rabbitmq" {
 
 module "catalogue" {
     #source = "../../terraform-aws-sg"
-    source = "git::https://github.com/rachelsigao/terraform-aws-sg.git?ref=main"
+    source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
 
@@ -56,7 +56,7 @@ module "catalogue" {
 
 module "user" {
     #source = "../../terraform-aws-sg"
-    source = "git::https://github.com/rachelsigao/terraform-aws-sg.git?ref=main"
+    source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
 
@@ -67,7 +67,7 @@ module "user" {
 
 module "cart" {
     #source = "../../terraform-aws-sg"
-    source = "git::https://github.com/rachelsigao/terraform-aws-sg.git?ref=main"
+    source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
 
@@ -78,7 +78,7 @@ module "cart" {
 
 module "shipping" {
     #source = "../../terraform-aws-sg"
-    source = "git::https://github.com/rachelsigao/terraform-aws-sg.git?ref=main"
+    source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
 
@@ -89,7 +89,7 @@ module "shipping" {
 
 module "payment" {
     #source = "../../terraform-aws-sg"
-    source = "git::https://github.com/rachelsigao/terraform-aws-sg.git?ref=main"
+    source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
 
@@ -100,7 +100,7 @@ module "payment" {
 
 module "backend_alb" {
     #source = "../../terraform-aws-sg"
-    source = "git::https://github.com/rachelsigao/terraform-aws-sg.git?ref=main"
+    source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
 
@@ -111,7 +111,7 @@ module "backend_alb" {
 
 module "frontend" {
     #source = "../../terraform-aws-sg"
-    source = "git::https://github.com/rachelsigao/terraform-aws-sg.git?ref=main"
+    source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
 
@@ -122,7 +122,7 @@ module "frontend" {
 
 module "frontend_alb" {
     #source = "../../terraform-aws-sg"
-    source = "git::https://github.com/rachelsigao/terraform-aws-sg.git?ref=main"
+    source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
 
@@ -133,7 +133,7 @@ module "frontend_alb" {
 
 module "bastion" {
     #source = "../../terraform-aws-sg"
-    source = "git::https://github.com/rachelsigao/terraform-aws-sg.git?ref=main"
+    source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
 
@@ -144,7 +144,7 @@ module "bastion" {
 
 module "vpn" {
     #source = "../../terraform-aws-sg"
-    source = "git::https://github.com/rachelsigao/terraform-aws-sg.git?ref=main"
+    source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
 
@@ -153,14 +153,14 @@ module "vpn" {
     vpc_id = local.vpc_id
 }
 
-# Allowing outbound traffic from the security groups
-# Mongodb accepting connections VPN host, bastion host, user and catalogue service security groups.
+# Ingress rules for service-to-service and admin access.
+# MongoDB allows SSH from VPN/bastion and DB access from catalogue/user.
 resource "aws_security_group_rule" "mongodb_vpn" {
   count = length(var.mongodb_ports_vpn)
   type              = "ingress"
   from_port         = var.mongodb_ports_vpn[count.index]
   to_port           = var.mongodb_ports_vpn[count.index]
-  protocol          = "tcp"
+  protocol          = "tcp" # we use tcp (transport- layer protocol instead of SSH (Application layer protocol) because In AWS security groups, the protocol field accepts IP-layer transport protocols like tcp, udp, icmp (or -1 for all)
   source_security_group_id = module.vpn.sg_id
   security_group_id = module.mongodb.sg_id
 }
@@ -193,7 +193,7 @@ resource "aws_security_group_rule" "mongodb_user" {
   security_group_id = module.mongodb.sg_id
 }
 
-# Redis accepting connections from VPN host, bastion host, user and cart service security groups.
+# Redis allows SSH from VPN/bastion and Redis traffic from user/cart.
 resource "aws_security_group_rule" "redis_vpn" {
   count = length(var.redis_ports_vpn)
   type              = "ingress"
@@ -232,7 +232,7 @@ resource "aws_security_group_rule" "redis_cart" {
   security_group_id = module.redis.sg_id
 }
 
-# MYSQL accepting connections from VPN host, bastion host, and shipping service security groups.
+# MySQL allows SSH from VPN/bastion and MySQL traffic from shipping.
 resource "aws_security_group_rule" "mysql_vpn" {
   count = length(var.mysql_ports_vpn)
   type              = "ingress"
@@ -262,7 +262,7 @@ resource "aws_security_group_rule" "mysql_shipping" {
   security_group_id = module.mysql.sg_id
 }
 
-# RabbitMQ accepting connections from VPN host, bastion host, and payment service security groups.
+# RabbitMQ allows SSH from VPN/bastion and AMQP traffic from payment.
 resource "aws_security_group_rule" "rabbitmq_vpn" {
   count = length(var.rabbitmq_ports_vpn)
   type              = "ingress"
@@ -292,7 +292,7 @@ resource "aws_security_group_rule" "rabbitmq_payment" {
   security_group_id = module.rabbitmq.sg_id
 }
 
-# Catalogue accepting connections from VPN SSH & HTTP host, bastion SSH host, and backend ALB security groups.
+# Catalogue allows SSH from VPN/bastion and app traffic from VPN/backend ALB.
 resource "aws_security_group_rule" "catalogue_vpn_ssh" {
   type              = "ingress"
   from_port         = 22
@@ -329,7 +329,7 @@ resource "aws_security_group_rule" "catalogue_backend_alb" {
   security_group_id = module.catalogue.sg_id
 }
 
-# User accepting connections from VPN SSH & HTTP host, bastion SSH host, and backend ALB security groups.
+# User allows SSH from VPN/bastion and app traffic from VPN/backend ALB.
 resource "aws_security_group_rule" "user_vpn_ssh" {
   type              = "ingress"
   from_port         = 22
@@ -366,7 +366,7 @@ resource "aws_security_group_rule" "user_backend_alb" {
   security_group_id = module.user.sg_id
 }
 
-# Cart accepting connections from VPN SSH & HTTP host, bastion SSH host, and backend ALB security groups.
+# Cart allows SSH from VPN/bastion and app traffic from VPN/backend ALB.
 resource "aws_security_group_rule" "cart_vpn_ssh" {
   type              = "ingress"
   from_port         = 22
@@ -403,7 +403,7 @@ resource "aws_security_group_rule" "cart_backend_alb" {
   security_group_id = module.cart.sg_id
 }
 
-# Shipping accepting connections from VPN SSH & HTTP host, bastion SSH host, and backend ALB security groups.
+# Shipping allows SSH from VPN/bastion and app traffic from VPN/backend ALB.
 resource "aws_security_group_rule" "shipping_vpn_ssh" {
   type              = "ingress"
   from_port         = 22
@@ -440,7 +440,7 @@ resource "aws_security_group_rule" "shipping_backend_alb" {
   security_group_id = module.shipping.sg_id
 }
 
-# Payment accepting connections from VPN SSH & HTTP host, bastion SSH host, and backend ALB security groups.
+# Payment allows SSH from VPN/bastion and app traffic from VPN/backend ALB.
 resource "aws_security_group_rule" "payment_vpn_ssh" {
   type              = "ingress"
   from_port         = 22
@@ -477,7 +477,7 @@ resource "aws_security_group_rule" "payment_backend_alb" {
   security_group_id = module.payment.sg_id
 }
 
-# Backend ALB accepting connections from VPN host, bastion host, frontend, cart, shipping, and payment service security groups.
+# Backend ALB allows HTTP from VPN/bastion/frontend and internal app SGs.
 resource "aws_security_group_rule" "backend_alb_vpn" {
   type              = "ingress"
   from_port         = 80
@@ -532,7 +532,7 @@ resource "aws_security_group_rule" "backend_alb_payment" {
   security_group_id = module.backend_alb.sg_id
 }
 
-# Frontend accepting connections from VPN host, bastion host, and frontend ALB security groups.
+# Frontend allows SSH from VPN/bastion and HTTP from frontend ALB.
 resource "aws_security_group_rule" "frontend_vpn" {
   type              = "ingress"
   from_port         = 22
@@ -560,7 +560,7 @@ resource "aws_security_group_rule" "frontend_frontend_alb" {
   security_group_id = module.frontend.sg_id
 }
 
-# Frontend ALB accepting connections from the internet on HTTP and HTTPS ports.
+# Frontend ALB is internet-facing on HTTP and HTTPS.
 resource "aws_security_group_rule" "frontend_alb_http" {
   type              = "ingress"
   from_port         = 80
@@ -579,7 +579,7 @@ resource "aws_security_group_rule" "frontend_alb_https" {
   security_group_id = module.frontend_alb.sg_id
 }
 
-# Bastion host accepting connections from the laptop internet.
+# Bastion allows SSH from the internet (consider restricting this CIDR).
 resource "aws_security_group_rule" "bastion_laptop" {
   type              = "ingress"
   from_port         = 22
@@ -589,7 +589,7 @@ resource "aws_security_group_rule" "bastion_laptop" {
   security_group_id = module.bastion.sg_id
 }
 
-# VPN accepting connections on SSH ports 22, 443, 1194, 943
+# VPN allows public access on management and tunnel ports.
 resource "aws_security_group_rule" "vpn_ssh" {
   type              = "ingress"
   from_port         = 22
@@ -625,13 +625,3 @@ resource "aws_security_group_rule" "vpn_943" {
   cidr_blocks = ["0.0.0.0/0"]
   security_group_id = module.vpn.sg_id
 }
-
-# # backend ALB accepting connections from my bastion host on port no 80
-# resource "aws_security_group_rule" "backend_alb_bastion" {
-#   type              = "ingress"
-#   from_port         = 80
-#   to_port           = 80
-#   protocol          = "tcp"
-#   source_security_group_id = module.bastion.sg_id
-#   security_group_id = module.backend_alb.sg_id
-# }
