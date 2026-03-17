@@ -1,6 +1,5 @@
 # Create security group per Roboshop component using the shared terraform-aws-sg module.
 module "mongodb" {
-    #source = "../../terraform-aws-sg"
     source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
@@ -11,7 +10,6 @@ module "mongodb" {
 }
 
 module "redis" {
-    #source = "../../terraform-aws-sg"
     source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
@@ -21,8 +19,7 @@ module "redis" {
     vpc_id = local.vpc_id
 }
 
-module "mysql" {
-    #source = "../../terraform-aws-sg"
+module "mysql" {  
     source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
@@ -33,7 +30,6 @@ module "mysql" {
 }
 
 module "rabbitmq" {
-    #source = "../../terraform-aws-sg"
     source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
@@ -44,7 +40,6 @@ module "rabbitmq" {
 }
 
 module "catalogue" {
-    #source = "../../terraform-aws-sg"
     source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
@@ -55,7 +50,6 @@ module "catalogue" {
 }
 
 module "user" {
-    #source = "../../terraform-aws-sg"
     source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
@@ -66,7 +60,6 @@ module "user" {
 }
 
 module "cart" {
-    #source = "../../terraform-aws-sg"
     source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
@@ -77,7 +70,6 @@ module "cart" {
 }
 
 module "shipping" {
-    #source = "../../terraform-aws-sg"
     source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
@@ -88,7 +80,6 @@ module "shipping" {
 }
 
 module "payment" {
-    #source = "../../terraform-aws-sg"
     source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
@@ -99,7 +90,6 @@ module "payment" {
 }
 
 module "backend_alb" {
-    #source = "../../terraform-aws-sg"
     source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
@@ -110,7 +100,6 @@ module "backend_alb" {
 }
 
 module "frontend" {
-    #source = "../../terraform-aws-sg"
     source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
@@ -121,7 +110,6 @@ module "frontend" {
 }
 
 module "frontend_alb" {
-    #source = "../../terraform-aws-sg"
     source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
@@ -131,8 +119,7 @@ module "frontend_alb" {
     vpc_id = local.vpc_id
 }
 
-module "bastion" {
-    #source = "../../terraform-aws-sg"
+module "bastion" { 
     source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
@@ -143,7 +130,6 @@ module "bastion" {
 }
 
 module "vpn" {
-    #source = "../../terraform-aws-sg"
     source = "../../terraform-aws-sg"
     project = var.project
     environment = var.environment
@@ -154,7 +140,7 @@ module "vpn" {
 }
 
 # Ingress rules for service-to-service and admin access.
-# MongoDB allows SSH from VPN/bastion and DB access from catalogue/user.
+# Allows MongoDB to receive traffic from VPN, Bastion, Catalogue, and User services by creating ingress rules in the MongoDB security group.
 resource "aws_security_group_rule" "mongodb_vpn" {
   count = length(var.mongodb_ports_vpn)
   type              = "ingress"
@@ -193,7 +179,7 @@ resource "aws_security_group_rule" "mongodb_user" {
   security_group_id = module.mongodb.sg_id
 }
 
-# Redis allows SSH from VPN/bastion and Redis traffic from user/cart.
+# Allows Redis to receive traffic from VPN, Bastion, User, and Cart services by creating ingress rules in the Redis security group.
 resource "aws_security_group_rule" "redis_vpn" {
   count = length(var.redis_ports_vpn)
   type              = "ingress"
@@ -232,7 +218,7 @@ resource "aws_security_group_rule" "redis_cart" {
   security_group_id = module.redis.sg_id
 }
 
-# MySQL allows SSH from VPN/bastion and MySQL traffic from shipping.
+# Allows MySQL to receive traffic from VPN, Bastion, and Shipping services by creating ingress rules in the MySQL security group.
 resource "aws_security_group_rule" "mysql_vpn" {
   count = length(var.mysql_ports_vpn)
   type              = "ingress"
@@ -262,7 +248,7 @@ resource "aws_security_group_rule" "mysql_shipping" {
   security_group_id = module.mysql.sg_id
 }
 
-# RabbitMQ allows SSH from VPN/bastion and AMQP traffic from payment.
+# Allows RabbitMQ to receive traffic from VPN, Bastion, and Payment services by creating ingress rules in the RabbitMQ security group.
 resource "aws_security_group_rule" "rabbitmq_vpn" {
   count = length(var.rabbitmq_ports_vpn)
   type              = "ingress"
@@ -292,7 +278,7 @@ resource "aws_security_group_rule" "rabbitmq_payment" {
   security_group_id = module.rabbitmq.sg_id
 }
 
-# Catalogue allows SSH from VPN/bastion and app traffic from VPN/backend ALB.
+# Allows Catalogue to receive traffic from VPN, Bastion, and Backend ALB services by creating ingress rules in the Catalogue security group.
 resource "aws_security_group_rule" "catalogue_vpn_ssh" {
   type              = "ingress"
   from_port         = 22
@@ -329,7 +315,7 @@ resource "aws_security_group_rule" "catalogue_backend_alb" {
   security_group_id = module.catalogue.sg_id
 }
 
-# User allows SSH from VPN/bastion and app traffic from VPN/backend ALB.
+# Allows User to receive traffic from VPN, Bastion, and Backend ALB services by creating ingress rules in the User security group.
 resource "aws_security_group_rule" "user_vpn_ssh" {
   type              = "ingress"
   from_port         = 22
@@ -366,7 +352,7 @@ resource "aws_security_group_rule" "user_backend_alb" {
   security_group_id = module.user.sg_id
 }
 
-# Cart allows SSH from VPN/bastion and app traffic from VPN/backend ALB.
+# Allows Cart to receive traffic from VPN, Bastion, and Backend ALB services by creating ingress rules in the Cart security group.
 resource "aws_security_group_rule" "cart_vpn_ssh" {
   type              = "ingress"
   from_port         = 22
@@ -403,7 +389,7 @@ resource "aws_security_group_rule" "cart_backend_alb" {
   security_group_id = module.cart.sg_id
 }
 
-# Shipping allows SSH from VPN/bastion and app traffic from VPN/backend ALB.
+# Allows Shipping to receive traffic from VPN, Bastion, and Backend ALB services by creating ingress rules in the Shipping security group.
 resource "aws_security_group_rule" "shipping_vpn_ssh" {
   type              = "ingress"
   from_port         = 22
@@ -440,7 +426,7 @@ resource "aws_security_group_rule" "shipping_backend_alb" {
   security_group_id = module.shipping.sg_id
 }
 
-# Payment allows SSH from VPN/bastion and app traffic from VPN/backend ALB.
+# Allows Payment to receive traffic from VPN, Bastion, and Backend ALB services by creating ingress rules in the Payment security group.
 resource "aws_security_group_rule" "payment_vpn_ssh" {
   type              = "ingress"
   from_port         = 22
@@ -477,7 +463,7 @@ resource "aws_security_group_rule" "payment_backend_alb" {
   security_group_id = module.payment.sg_id
 }
 
-# Backend ALB allows HTTP from VPN/bastion/frontend and internal app SGs.
+# Allows Backend ALB to receive HTTP traffic from VPN, Bastion, Frontend, and internal app services (Cart, Shipping, Payment) by creating ingress rules in the Backend ALB security group.
 resource "aws_security_group_rule" "backend_alb_vpn" {
   type              = "ingress"
   from_port         = 80
@@ -532,7 +518,7 @@ resource "aws_security_group_rule" "backend_alb_payment" {
   security_group_id = module.backend_alb.sg_id
 }
 
-# Frontend allows SSH from VPN/bastion and HTTP from frontend ALB.
+# Allows Frontend to receive traffic from VPN, Bastion, and Frontend ALB services by creating ingress rules in the Frontend security group.
 resource "aws_security_group_rule" "frontend_vpn" {
   type              = "ingress"
   from_port         = 22
@@ -560,7 +546,7 @@ resource "aws_security_group_rule" "frontend_frontend_alb" {
   security_group_id = module.frontend.sg_id
 }
 
-# Frontend ALB is internet-facing on HTTP and HTTPS.
+# Allows Frontend ALB to receive HTTP and HTTPS traffic from the internet by creating ingress rules in the Frontend ALB security group.
 resource "aws_security_group_rule" "frontend_alb_http" {
   type              = "ingress"
   from_port         = 80
@@ -579,7 +565,7 @@ resource "aws_security_group_rule" "frontend_alb_https" {
   security_group_id = module.frontend_alb.sg_id
 }
 
-# Bastion allows SSH from the internet (consider restricting this CIDR).
+# Allows Bastion to receive SSH traffic from the internet by creating ingress rules in the Bastion security group.
 resource "aws_security_group_rule" "bastion_laptop" {
   type              = "ingress"
   from_port         = 22
@@ -589,7 +575,7 @@ resource "aws_security_group_rule" "bastion_laptop" {
   security_group_id = module.bastion.sg_id
 }
 
-# VPN allows public access on management and tunnel ports.
+# Allows VPN to receive public access on management and tunnel ports by creating ingress rules in the VPN security group.
 resource "aws_security_group_rule" "vpn_ssh" {
   type              = "ingress"
   from_port         = 22
