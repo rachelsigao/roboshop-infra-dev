@@ -33,7 +33,7 @@ resource "aws_lb_listener" "backend_alb" {
   }
 }
 
-# Backend ALB Route53 Record configuration
+# Creating Route53 Record for Backend ALB to avoid long DNS name of ALB and easily access the backend services using subdomain names. 
 resource "aws_route53_record" "backend_alb" {
   zone_id = var.zone_id
   name    = "*.backend-dev.${var.zone_name}"
@@ -41,7 +41,7 @@ resource "aws_route53_record" "backend_alb" {
 
   alias {
     name                   = module.backend_alb.dns_name
-    zone_id                = module.backend_alb.zone_id # This is the ZONE ID of ALB
+    zone_id                = module.backend_alb.zone_id # ZONE ID of ALB
     evaluate_target_health = true
   }
 }

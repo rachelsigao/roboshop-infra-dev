@@ -86,7 +86,7 @@ resource "aws_instance" "mysql" {
   instance_type = "t3.micro"
   vpc_security_group_ids = [local.mysql_sg_id]
   subnet_id = local.database_subnet_id
-  iam_instance_profile = "EC2RoleToFetchSSMParams"
+  iam_instance_profile = "EC2RoleToFetchSSMParams" # Attaching the IAM role to the EC2 instance to fetch the SSM parameters without running aws configure. 
   tags = merge(
     local.common_tags,
     {
@@ -162,7 +162,7 @@ resource "terraform_data" "rabbitmq" {
   }
 }
 
-# Creating the route53 records 
+# Creating the route53 records.
 # Route53 record for Mongodb.
 resource "aws_route53_record" "mongodb" {
   zone_id = var.zone_id
