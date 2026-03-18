@@ -57,14 +57,14 @@ resource "terraform_data" "catalogue" {
   }
 }
 
-# Stopping the EC2 instance to create AMI, as we cannot create AMI from running EC2 instance.
+# Stopping the EC2 instance to create AMI, as we dont create AMI from running EC2 instance.
 resource "aws_ec2_instance_state" "catalogue" {
   instance_id = aws_instance.catalogue.id
   state       = "stopped"
   depends_on = [terraform_data.catalogue]
 }
 
-
+# Creating the AMI from the EC2 instance. Used to create the EC2 instances in the Auto Scaling group.
 resource "aws_ami_from_instance" "catalogue" {
   name               = "${var.project}-${var.environment}-catalogue"
   source_instance_id = aws_instance.catalogue.id
@@ -76,7 +76,8 @@ resource "aws_ami_from_instance" "catalogue" {
     }
   )
 }
-# Terminate the EC2 instance after creating the AMI, as we don't need it. We will use the AMI to create the EC2 instances in the Auto Scaling group.
+
+# Terminate the EC2 instance after creating the AMI.
 resource "terraform_data" "catalogue_delete" {
   triggers_replace = [
     aws_instance.catalogue.id
@@ -90,7 +91,7 @@ resource "terraform_data" "catalogue_delete" {
   depends_on = [aws_ami_from_instance.catalogue]
 }
 
-# Terminate the EC2 instance after creating the AMI, as we don't need it. We will use the AMI to create the EC2 instances in the Auto Scaling group.
+# Creating the launch template for catalogueAuto Scaling group to launch the EC2 instances.
 resource "aws_launch_template" "catalogue" {
   name = "${var.project}-${var.environment}-catalogue"
 
@@ -163,12 +164,13 @@ resource "aws_autoscaling_group" "catalogue" {
     
   }
 
+# Instance refresh automatically replace the instances in the Auto Scaling group when a new AMI is created. Ensure that new instances are launched with the latest AMI and the old instances are terminated.
   instance_refresh {
     strategy = "Rolling"
     preferences {
       min_healthy_percentage = 50
     }
-    triggers = ["launch_template"]
+    triggers = ["launch_template"] # Trigger the instance refresh when the launch template is updated, which happens when we create a new AMI.
   }
 
   timeouts{
