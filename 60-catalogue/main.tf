@@ -144,10 +144,10 @@ resource "aws_autoscaling_group" "catalogue" {
   health_check_grace_period = 90
   health_check_type         = "ELB"
 
-  launch_template {
-    id      = aws_launch_template.catalogue.id
-    version = aws_launch_template.catalogue.latest_version
-  }
+  # launch_template {
+  #   id      = aws_launch_template.catalogue.id
+  #   version = aws_launch_template.catalogue.latest_version
+  # }
 
   dynamic "tag" {
     for_each = merge(
