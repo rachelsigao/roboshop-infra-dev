@@ -1,4 +1,4 @@
-# Creating Target group for ALB to register the EC2 instances of catalogue. Without this, ALB cannotperform health check on the EC2 instances and route the traffic to the healthy instances.
+# Creating Target group for ALB to register the EC2 instances of catalogue. This is to perform health check, and route traffic to the healthy instances.
 resource "aws_lb_target_group" "catalogue" {
   name     = "${var.project}-${var.environment}-catalogue" #roboshop-dev-catalogue
   port     = 8080
@@ -91,7 +91,7 @@ resource "terraform_data" "catalogue_delete" {
   depends_on = [aws_ami_from_instance.catalogue]
 }
 
-# Creating the launch template for catalogueAuto Scaling group to launch the EC2 instances.
+# Creating the launch template for catalogue Auto Scaling group to launch the EC2 instances.
 resource "aws_launch_template" "catalogue" {
   name = "${var.project}-${var.environment}-catalogue"
 
@@ -144,10 +144,10 @@ resource "aws_autoscaling_group" "catalogue" {
   health_check_grace_period = 90
   health_check_type         = "ELB"
 
-  # launch_template {
-  #   id      = aws_launch_template.catalogue.id
-  #   version = aws_launch_template.catalogue.latest_version
-  # }
+  launch_template {
+    id      = aws_launch_template.catalogue.id
+    version = aws_launch_template.catalogue.latest_version
+  }
 
   dynamic "tag" {
     for_each = merge(
@@ -164,7 +164,7 @@ resource "aws_autoscaling_group" "catalogue" {
     
   }
 
-# Instance refresh automatically replace the instances in the Auto Scaling group when a new AMI is created. Ensure that new instances are launched with the latest AMI and the old instances are terminated.
+# Automatically update Launch template when a new AMI is created. Ensure that new instances are launched with the latest AMI and the old instances are terminated.
   instance_refresh {
     strategy = "Rolling"
     preferences {
@@ -178,7 +178,7 @@ resource "aws_autoscaling_group" "catalogue" {
   }
 }
 
-# Creating the Auto Scaling policy for catalogue to automatically scale the EC2 instances based on the CPU utilization.
+# Automatically scale the EC2 instances based on the CPU utilization.
 resource "aws_autoscaling_policy" "catalogue" {
   name                   = "${var.project}-${var.environment}-catalogue"
   autoscaling_group_name = aws_autoscaling_group.catalogue.name
@@ -192,7 +192,7 @@ resource "aws_autoscaling_policy" "catalogue" {
   }
 }
 
-# Creating the ALB listener rule to route the traffic to the target group based on the host header. This will allow us to access the catalogue application using the subdomain name instead of the ALB DNS name.
+# Creating the ALB listener rule to route the traffic to the target group based on the host header. 
 resource "aws_lb_listener_rule" "catalogue" {
   listener_arn = local.backend_alb_listener_arn
   priority     = 10
