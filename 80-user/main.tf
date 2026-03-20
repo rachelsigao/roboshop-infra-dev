@@ -1,5 +1,5 @@
 module "user" {
-    source = "../../terraform-aws-roboshop"
+    source = "../../terraform-roboshop-module"
     component = "user"
     rule_priority = 20
 }

@@ -166,7 +166,7 @@ resource "terraform_data" "rabbitmq" {
 # Route53 record for Mongodb.
 resource "aws_route53_record" "mongodb" {
   zone_id = var.zone_id
-  name    = "mongodb-${var.environment}.${var.zone_name}" #mongodb-dev.daws84s.site
+  name    = "mongodb-${var.environment}.${var.zone_name}" #mongodb-dev.rachelsigao.online
   type    = "A"
   ttl     = 1
   records = [aws_instance.mongodb.private_ip]
