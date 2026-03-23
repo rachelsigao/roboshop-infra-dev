@@ -142,7 +142,7 @@ resource "aws_autoscaling_group" "catalogue" {
   target_group_arns = [aws_lb_target_group.catalogue.arn]
   vpc_zone_identifier  = local.private_subnet_ids
   health_check_grace_period = 90
-  health_check_type         = "ELB"
+  health_check_type         = "ELB" # ELB health checks perform deeper, application-level checks to verify that the software running on the instance is responsive and working correctly, while EC2 health checks only monitor the basic instance health at the infrastructure level. 
 
   launch_template {
     id      = aws_launch_template.catalogue.id
