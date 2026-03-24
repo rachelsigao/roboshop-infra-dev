@@ -10,7 +10,7 @@ resource "aws_instance" "bastion" {
     volume_type = "gp3" # or "gp2", depending on your preference
   }
   user_data = file("bastion.sh")
-  iam_instance_profile = "TerraformAdmin"
+  iam_instance_profile = "TerraformAdmin" # Gives bastion host, AWS permissions to run Terraform commands (like terraform apply from inside the bastion). create this IAM role in AWS first before running this folder
   tags = merge(
     local.common_tags,
     {
