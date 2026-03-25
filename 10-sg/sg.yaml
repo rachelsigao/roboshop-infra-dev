@@ -1,3 +1,4 @@
+# Only for documentation purpose. This file is not used in terraform code.
 - name: Roboshop SG and Rules
   security_groups:
   - DB:
