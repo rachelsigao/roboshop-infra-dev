@@ -7,18 +7,16 @@ resource "aws_cloudfront_distribution" "roboshop" {
         origin_protocol_policy = "https-only"
         origin_ssl_protocols   = ["TLSv1.2"]
     }
-    origin_id                = "cdn.${var.zone_name}"
+    origin_id = "cdn.${var.zone_name}"
   }
 
-  enabled             = true
-
+  enabled = true
   aliases = ["cdn.rachelsigao.online"]
 
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "cdn.${var.zone_name}"
-
     viewer_protocol_policy = "https-only"
     cache_policy_id  = data.aws_cloudfront_cache_policy.cacheDisable.id
   }
@@ -29,7 +27,6 @@ resource "aws_cloudfront_distribution" "roboshop" {
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
     cached_methods   = ["GET", "HEAD", "OPTIONS"]
     target_origin_id = "cdn.${var.zone_name}"
-
     viewer_protocol_policy = "https-only"
     cache_policy_id  = data.aws_cloudfront_cache_policy.cacheEnable.id
   }
@@ -56,6 +53,7 @@ resource "aws_cloudfront_distribution" "roboshop" {
   }
 }
 
+# Route53 record for CloudFront distribution to access it using subdomain name instead of long CloudFront domain name.
 resource "aws_route53_record" "frontend_alb" {
   zone_id = var.zone_id
   name    = "cdn.${var.zone_name}" #dev.rachelsigao.online
